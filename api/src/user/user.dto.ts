@@ -5,7 +5,7 @@ export class CreateUserDto {
   name: string;
 
   @ApiProperty()
-  surname: string;
+  username: string;
 
   @ApiProperty()
   email: string;
@@ -15,21 +15,21 @@ export class CreateUserDto {
 }
 
 export class UpdateUserDto {
-  @ApiProperty()
-  name: string;
+  @ApiProperty({ required: false })
+  name?: string;
 
-  @ApiProperty()
-  surname: string;
+  @ApiProperty({ required: false })
+  username?: string;
 
-  @ApiProperty()
-  email: string;
+  @ApiProperty({ required: false })
+  email?: string;
 
-  @ApiProperty()
-  password: string;
+  @ApiProperty({ required: false })
+  password?: string;
 
-  @ApiProperty()
-  ativo: boolean;
+  @ApiProperty({ required: false })
+  ativo?: boolean;
 
-  @ApiProperty()
-  perfil: string[];
+  @ApiProperty({ required: false })
+  perfil?: string[];
 }
