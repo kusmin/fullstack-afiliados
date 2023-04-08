@@ -3,6 +3,9 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -26,9 +29,10 @@ export class UserController {
     description: 'The users have been successfully retrieved.',
   })
   @Get()
-  findAll(): Promise<User[]> {
-    return this.userService.findAll();
+  async findAll(): Promise<User[]> {
+    return await this.userService.findAll();
   }
+
   @ApiOperation({ summary: 'Get a single user by ID' })
   @ApiResponse({
     status: 200,
@@ -36,8 +40,12 @@ export class UserController {
   })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @Get(':id')
-  findOne(@Param('id') id: number): Promise<User> {
-    return this.userService.findOne(id);
+  async findOne(@Param('id') id: number): Promise<User> {
+    const user = await this.userService.findOne(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   @ApiOperation({ summary: 'Create a new user' })
@@ -45,9 +53,23 @@ export class UserController {
     status: 201,
     description: 'The user has been successfully created.',
   })
+  @ApiResponse({
+    status: 400,
+    description: 'The email is already in use.',
+  })
   @Post()
-  create(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return this.userService.create(createUserDto);
+  async create(@Body() createUserDto: CreateUserDto): Promise<User> {
+    try {
+      return await this.userService.create(createUserDto);
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new HttpException(
+          'The email is already in use.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      throw error;
+    }
   }
 
   @ApiOperation({ summary: 'Update a user by ID' })
@@ -57,11 +79,15 @@ export class UserController {
   })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @Put(':id')
-  update(
+  async update(
     @Param('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
-    return this.userService.update(id, updateUserDto);
+    const user = await this.userService.update(id, updateUserDto);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   @ApiOperation({ summary: 'Delete a user by ID' })
@@ -71,7 +97,7 @@ export class UserController {
   })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @Delete(':id')
-  delete(@Param('id') id: number): Promise<void> {
-    return this.userService.delete(id);
+  async delete(@Param('id') id: number): Promise<void> {
+    return await this.userService.delete(id);
   }
 }
