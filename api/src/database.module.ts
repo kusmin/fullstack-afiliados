@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
+import { Arquivo } from './models/arquivo.entity';
 import { User } from './models/user.entity';
 dotenv.config();
 
@@ -15,7 +16,7 @@ dotenv.config();
       database: process.env.TYPEORM_DATABASE,
       synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
       logging: process.env.TYPEORM_LOGGING === 'true',
-      entities: [User],
+      entities: [User, Arquivo],
     }),
   ],
   exports: [TypeOrmModule],

@@ -2,10 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { Arquivo } from './arquivo.entity';
 
 @Entity('users')
 @Unique(['email'])
@@ -36,4 +38,7 @@ export class User {
 
   @Column({ type: 'simple-array', default: 'user' })
   perfil: string[];
+
+  @OneToMany(() => Arquivo, (arquivo) => arquivo.user)
+  arquivos: Arquivo[];
 }
