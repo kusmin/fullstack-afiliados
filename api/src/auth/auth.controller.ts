@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from '../user/user.dto';
 import { UserService } from '../user/user.service';
+import { LoginUserDto } from './auth.dto';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -17,8 +18,8 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  async login(@Body() createUserDto: CreateUserDto) {
-    const user = await this.authService.validateUser(createUserDto);
+  async login(@Body() loginUserDto: LoginUserDto) {
+    const user = await this.authService.validateUser(loginUserDto);
     if (!user) {
       throw new UnauthorizedException();
     }

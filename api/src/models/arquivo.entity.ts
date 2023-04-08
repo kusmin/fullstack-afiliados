@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 
@@ -15,6 +16,9 @@ export class Arquivo {
 
   @CreateDateColumn({ name: 'data_criacao' })
   dataCriacao: Date;
+
+  @UpdateDateColumn({ name: 'data_update' })
+  dataUpdate: Date;
 
   @Column({ name: 'nome_do_arquivo', length: 255 })
   nomeDoArquivo: string;
@@ -31,7 +35,7 @@ export class Arquivo {
   @Column({ name: 'data_exclusao', nullable: true, type: 'timestamp' })
   dataExclusao: Date | null;
 
-  @ManyToOne(() => User, (user) => user.arquivos, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
@@ -40,7 +44,4 @@ export class Arquivo {
 
   @Column({ name: 'url', length: 255 })
   url: string;
-
-  @Column({ name: 'tipo', length: 32, nullable: true })
-  tipo: string;
 }

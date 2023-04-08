@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { User } from '../models/user.entity';
 import { CreateUserDto, UpdateUserDto } from './user.dto';
@@ -35,8 +36,13 @@ export class UserService {
     if (existingUser) {
       throw new BadRequestException('Email already exists');
     }
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
 
-    const newUser = this.userRepository.create(createUserDto);
+    const newUser = this.userRepository.create({
+      ...createUserDto,
+      hashPassword: hashedPassword,
+    });
     return this.userRepository.save(newUser);
   }
 

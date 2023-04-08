@@ -13,6 +13,12 @@ services:
       - '5432:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
+  
+  storage:
+    build: ./s3
+    container_name: s3
+    ports:
+      - 9000:9000
 
 volumes:
   db-data:
