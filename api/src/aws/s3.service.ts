@@ -1,4 +1,10 @@
 import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
+import {
   HttpException,
   HttpStatus,
   Injectable,
@@ -6,43 +12,71 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { S3 } from 'aws-sdk';
+
 import { Readable } from 'stream';
 import { Repository } from 'typeorm';
 import { Arquivo } from '../models/arquivo.entity';
 
+function getS3FileUrl(
+  bucket: string,
+  fileName: string,
+  region: string,
+  useLocal: boolean,
+  endpoint: string,
+): string {
+  if (useLocal) {
+    return `${endpoint}/ui/${bucket}/${fileName}`;
+  } else {
+    return `https://${bucket}.s3.${region}.amazonaws.com/${fileName}`;
+  }
+}
+
 @Injectable()
 export class S3Service {
-  private s3: S3;
+  private s3: S3Client;
 
   constructor(
     private configService: ConfigService,
     @InjectRepository(Arquivo)
     private arquivoRepository: Repository<Arquivo>,
   ) {
-    this.s3 = new S3({
-      endpoint: this.configService.get('AWS_S3_ENDPOINT'),
-      accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID'),
-      secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY'),
+    this.s3 = new S3Client({
       region: this.configService.get('AWS_REGION'),
+      credentials: {
+        accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID'),
+        secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY'),
+      },
+      ...(process.env.NODE_ENV === 'local'
+        ? { endpoint: this.configService.get('AWS_S3_ENDPOINT') }
+        : {}),
     });
   }
 
   async uploadFile(file: Express.Multer.File, id: number): Promise<Arquivo> {
     const { originalname, buffer, mimetype } = file;
 
+    const bucketName = this.configService.get('AWS_S3_BUCKET_NAME');
     const params = {
-      Bucket: this.configService.get('AWS_S3_BUCKET_NAME'),
+      Bucket: bucketName,
       Key: originalname,
       Body: buffer,
     };
 
-    const result = await this.s3.upload(params).promise();
+    const command = new PutObjectCommand(params);
+    await this.s3.send(command);
+
     const arquivo = new Arquivo();
     arquivo.nomeDoArquivo = originalname;
     arquivo.mimeType = mimetype;
     arquivo.bucket = params.Bucket;
-    arquivo.url = result.Location;
+    arquivo.url = getS3FileUrl(
+      bucketName,
+      originalname,
+      this.configService.get('AWS_REGION'),
+      process.env.NODE_ENV === 'local',
+      this.configService.get('AWS_S3_ENDPOINT'),
+    );
+
     arquivo.userId = id;
 
     return await this.arquivoRepository.save(arquivo);
@@ -54,17 +88,25 @@ export class S3Service {
   ): Promise<Arquivo> {
     const { originalname, buffer, mimetype } = file;
 
+    const bucketName = this.configService.get('AWS_S3_BUCKET_NAME');
     const params = {
-      Bucket: this.configService.get('AWS_S3_BUCKET_NAME'),
+      Bucket: bucketName,
       Key: originalname,
       Body: buffer,
     };
 
-    const result = await this.s3.upload(params).promise();
+    const command = new PutObjectCommand(params);
+    await this.s3.send(command);
     arquivo.nomeDoArquivo = originalname;
     arquivo.mimeType = mimetype;
     arquivo.bucket = params.Bucket;
-    arquivo.url = result.Location;
+    arquivo.url = getS3FileUrl(
+      bucketName,
+      originalname,
+      this.configService.get('AWS_REGION'),
+      process.env.NODE_ENV === 'local',
+      this.configService.get('AWS_S3_ENDPOINT'),
+    );
 
     return await this.arquivoRepository.save(arquivo);
   }
@@ -87,7 +129,9 @@ export class S3Service {
       Key: arquivo.nomeDoArquivo,
     };
 
-    const fileStream = this.s3.getObject(params).createReadStream();
+    const command = new GetObjectCommand(params);
+    const response = await this.s3.send(command);
+    const fileStream = response.Body as Readable;
     if (!fileStream) {
       throw new HttpException('Arquivo excluído do S3', HttpStatus.BAD_REQUEST);
     }
@@ -111,7 +155,8 @@ export class S3Service {
         Key: arquivo.nomeDoArquivo,
       };
 
-      await this.s3.deleteObject(params).promise();
+      const command = new DeleteObjectCommand(params);
+      await this.s3.send(command);
 
       arquivo.isExcluido = true;
       arquivo.dataExclusao = new Date();
@@ -145,7 +190,8 @@ export class S3Service {
       Key: filename,
     };
 
-    await this.s3.deleteObject(params).promise();
+    const command = new DeleteObjectCommand(params);
+    await this.s3.send(command);
   }
 
   async getArquivoById(id: number): Promise<Arquivo> {

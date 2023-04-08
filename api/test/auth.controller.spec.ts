@@ -75,7 +75,7 @@ describe('AuthController', () => {
       jest.spyOn(authService, 'validateUser').mockResolvedValue(mockUser);
       jest
         .spyOn(authService, 'login')
-        .mockResolvedValue({ access_token: mockToken });
+        .mockResolvedValue({ access_token: mockToken, user: mockUser });
 
       const response = await request
         .post('/auth/login')

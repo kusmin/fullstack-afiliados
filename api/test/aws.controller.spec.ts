@@ -60,11 +60,12 @@ describe('AwsController', () => {
 
       (service.uploadFile as jest.Mock).mockResolvedValue(arquivo);
 
+      const exemploUserId = 1;
       const result = await controller.uploadFile(file, {
-        user: { id: 1 },
+        user: { id: exemploUserId },
       } as any);
 
-      expect(service.uploadFile).toHaveBeenCalledWith(file);
+      expect(service.uploadFile).toHaveBeenCalledWith(file, exemploUserId);
       expect(result).toEqual(arquivo);
     });
   });
@@ -133,6 +134,17 @@ describe('AwsController', () => {
 
       expect(service.replaceFile).toHaveBeenCalledWith(id, file);
       expect(result).toEqual(arquivo);
+    });
+  });
+
+  describe('deleteFile', () => {
+    it('should call S3Service.deleteFile', async () => {
+      const id = 1;
+      (service.deleteFile as jest.Mock).mockResolvedValue(undefined);
+
+      await controller.deleteFile(id);
+
+      expect(service.deleteFile).toHaveBeenCalledWith(id);
     });
   });
 });
