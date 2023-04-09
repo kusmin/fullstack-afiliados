@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as dotenv from 'dotenv';
 import { AppModule } from './app.module';
+import { TransactionTypeService } from './transaction/transaction-type.service';
 
 dotenv.config();
 
@@ -27,6 +28,9 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, document);
 
-  await app.listen(5000);
+  const transactionTypeService = app.get(TransactionTypeService);
+
+  await transactionTypeService.seedTransactionTypes();
+  await app.listen(5001);
 }
 bootstrap();

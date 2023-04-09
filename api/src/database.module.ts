@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
 import { Arquivo } from './models/arquivo.entity';
+import { ProcessedData } from './models/processed-data.entity';
+import { TransactionType } from './models/transaction-type.entity';
+import { Transaction } from './models/transaction.entity';
 import { User } from './models/user.entity';
 dotenv.config();
 
@@ -16,7 +19,7 @@ dotenv.config();
       database: process.env.TYPEORM_DATABASE,
       synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
       logging: process.env.TYPEORM_LOGGING === 'true',
-      entities: [User, Arquivo],
+      entities: [User, Arquivo, TransactionType, Transaction, ProcessedData],
     }),
   ],
   exports: [TypeOrmModule],

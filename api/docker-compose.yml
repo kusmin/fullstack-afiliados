@@ -35,6 +35,8 @@ services:
         - 9090:9090
       networks:
       - monitoring
+      environment:
+        - APP_HOST=app:5000
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -42,6 +44,14 @@ services:
       - 3100:3000
     depends_on:
       - prometheus
+    networks:
+      - monitoring
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
     networks:
       - monitoring
   app:
@@ -55,15 +65,17 @@ services:
       - storage
       - prometheus
       - grafana
+      - redis
     networks:
       - monitoring
     environment:
       - AWS_S3_ENDPOINT=http://storage:9000/s3
       - TYPEORM_HOST=db
-      - APP_HOST=localhost:5000
+      - REDIS_HOST=redis
 
 volumes:
   db-data:
   grafana-data:
 networks:
-  monitoring:    
+  monitoring:
+    driver: bridge

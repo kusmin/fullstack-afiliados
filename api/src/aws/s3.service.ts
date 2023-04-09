@@ -142,6 +142,35 @@ export class S3Service {
     };
   }
 
+  async download(
+    arquivo: Arquivo,
+  ): Promise<{ stream: Readable; mimeType: string; filename: string }> {
+    if (!arquivo) {
+      throw new NotFoundException('Arquivo não encontrado');
+    }
+
+    if (arquivo.isExcluido) {
+      throw new HttpException('Arquivo já excluído', HttpStatus.BAD_REQUEST);
+    }
+
+    const params = {
+      Bucket: this.configService.get('AWS_S3_BUCKET_NAME'),
+      Key: arquivo.nomeDoArquivo,
+    };
+
+    const command = new GetObjectCommand(params);
+    const response = await this.s3.send(command);
+    const fileStream = response.Body as Readable;
+    if (!fileStream) {
+      throw new HttpException('Arquivo excluído do S3', HttpStatus.BAD_REQUEST);
+    }
+    return {
+      stream: fileStream,
+      mimeType: arquivo.mimeType,
+      filename: arquivo.nomeDoArquivo,
+    };
+  }
+
   async deleteFile(id: number): Promise<void> {
     const arquivo = await this.getArquivoById(id);
 
@@ -196,5 +225,16 @@ export class S3Service {
 
   async getArquivoById(id: number): Promise<Arquivo> {
     return await this.arquivoRepository.findOne({ where: { id } });
+  }
+
+  async getFileContentAsString(id: number): Promise<string> {
+    const { stream } = await this.downloadFile(id);
+    return new Promise((resolve, reject) => {
+      const chunks: Uint8Array[] = [];
+      stream
+        .on('data', (chunk) => chunks.push(chunk))
+        .on('error', reject)
+        .on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+    });
   }
 }

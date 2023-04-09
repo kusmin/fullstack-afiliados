@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.309.0",
+    "@nestjs/bull": "^0.6.3",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
@@ -36,6 +37,7 @@
     "@types/multer": "^1.4.7",
     "aws-sdk": "^2.1353.0",
     "bcrypt": "^5.1.0",
+    "bull": "^4.10.4",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "dotenv": "^16.0.3",
