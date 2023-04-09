@@ -2,7 +2,7 @@ import axios from "axios";
 
 const AuthService = {
   usuarioCorrente: () => {
-    let conteudo = localStorage.getItem("usuario");
+    let conteudo = localStorage.getItem("user");
     if (conteudo) {
       return JSON.parse(conteudo);
     } else {
@@ -11,11 +11,11 @@ const AuthService = {
   },
 
   setUsuarioCorrente: (usuario) => {
-    localStorage.setItem("usuario", JSON.stringify(usuario));
+    localStorage.setItem("user", JSON.stringify(usuario));
   },
 
   removeUsuarioCorrente: () => {
-    localStorage.removeItem("usuario");
+    localStorage.removeItem("user");
   },
 
   token: () => {
@@ -41,7 +41,7 @@ const AuthService = {
 
   register: (user) => {
     return axios.post(
-      import.meta.env.VITE_HOST_API + "/auth/signup",
+      import.meta.env.VITE_HOST_API + "/auth/register",
       user
     );
   },

@@ -12,6 +12,7 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import AuthWrapper from "../components/AuthWrapper";
+import AuthService from "../service/AuthService";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
@@ -20,10 +21,11 @@ const SignUp = () => {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const toast = useToast();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -31,16 +33,31 @@ const SignUp = () => {
     }
 
    
-    const user = {
-      email: email,
-      name: name,
-      username: username,
+    const create = {
+      email,
+      name,
+      username,
+      password
     };
 
-    // Implemente aqui a lógica de criação de conta (exemplo: chamada API)
+    try {
+      setLoading(true)
+      await AuthService.register(create)
+      navigate("/login");
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error.message || "Create acount error. Check your information!",
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
 
-    // Após a criação bem-sucedida da conta, redirecione o usuário para a tela de login
-    navigate("/login");
+    
   };
 
   const validateForm = () => {
@@ -160,7 +177,8 @@ const SignUp = () => {
                 type="submit"
                 className="button is-link"
               >
-                Register
+                {loading ? '...Loading':'Register'}
+                
               </Button>
               <Button  colorScheme="teal" variant="outline" onClick={goToLogin}>
                 Go to Login

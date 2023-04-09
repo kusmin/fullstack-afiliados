@@ -65,9 +65,7 @@ export class TransactionProcessorService {
 
   private validateLine(line: string, lineNumber: number): string[] {
     const errors: string[] = [];
-    console.log('linha');
-    console.log(line);
-    if (line.trim() === '') return;
+    if (line.trim() === '') return errors;
     if (line.length !== 86) {
       errors.push(
         `Linha ${lineNumber}: Tamanho incorreto (${line.length} caracteres, deveria ser 86).`,

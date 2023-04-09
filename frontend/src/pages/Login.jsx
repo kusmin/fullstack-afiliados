@@ -60,7 +60,7 @@ const Login = () => {
     return true;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -68,9 +68,9 @@ const Login = () => {
     }
     setLoading(true)
     try {
-      const user = AuthService.auth({email, password})
+      const user = await AuthService.auth({email, password})
       dispatch(login(user));
-      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("user", JSON.stringify(user.data));
       navigate("/home");
     } catch (error) {
       toast({
