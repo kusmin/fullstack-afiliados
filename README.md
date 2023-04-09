@@ -15,7 +15,7 @@ Este projeto inclui um script chamado `run-docker.sh` que facilita a execução 
 1. Clone o repositório:
 
 ```bash
-git clone https://github.com/seu_usuario/projeto_xyz.git
+git clone https://github.com/kusmin/fullstack-afiliados
 cd projeto_xyz
 ```
 
