@@ -16,7 +16,7 @@ Este projeto inclui um script chamado `run-docker.sh` que facilita a execução 
 
 ```bash
 git clone https://github.com/kusmin/fullstack-afiliados
-cd projeto_xyz
+cd fullstack-afiliados
 ```
 
 2. Torne o script run-docker.sh executável:
