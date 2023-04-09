@@ -49,6 +49,7 @@ export class TransactionProcessorService {
         if (lineErrors.length > 0) {
           errors.push(...lineErrors);
         }
+
         lineNumber++;
       });
 
@@ -64,7 +65,9 @@ export class TransactionProcessorService {
 
   private validateLine(line: string, lineNumber: number): string[] {
     const errors: string[] = [];
-
+    console.log('linha');
+    console.log(line);
+    if (line.trim() === '') return;
     if (line.length !== 86) {
       errors.push(
         `Linha ${lineNumber}: Tamanho incorreto (${line.length} caracteres, deveria ser 86).`,
@@ -112,6 +115,7 @@ export class TransactionProcessorService {
     const processedDataList: ProcessedData[] = [];
 
     for await (const line of rl) {
+      if (line.trim() === '') continue;
       const transactionTypeId = parseInt(line.charAt(0), 10);
       const date = new Date(line.substring(1, 26));
       const product = line.substring(26, 56).trim();

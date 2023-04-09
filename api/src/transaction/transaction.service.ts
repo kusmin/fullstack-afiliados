@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { S3Service } from 'src/aws/s3.service';
 import { Repository } from 'typeorm';
@@ -24,7 +24,6 @@ export class TransactionService {
     const transaction = new Transaction();
     transaction.status = 'RECEBIDA';
 
-    // Adicione quaisquer outras propriedades necessárias à transação
     transaction.arquivo = await this.s3Service.uploadFile(file, id);
     await this.transactionRepository.save(transaction);
     await this.transactionProducer.addToQueue(transaction);
@@ -45,5 +44,35 @@ export class TransactionService {
     processedData: ProcessedData,
   ): Promise<ProcessedData> {
     return await this.processedDataRepository.save(processedData);
+  }
+
+  async findAll(): Promise<Transaction[]> {
+    return this.transactionRepository.find();
+  }
+
+  async findOne(id: number): Promise<Transaction> {
+    return this.transactionRepository.findOne({ where: { id } });
+  }
+
+  async remove(id: number): Promise<void> {
+    await this.transactionRepository.delete(id);
+  }
+
+  async updateStatus(id: number, status: string): Promise<Transaction> {
+    const transaction = await this.findOne(id);
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+    transaction.status = status;
+    return this.transactionRepository.save(transaction);
+  }
+
+  async findProcessedDataByTransactionId(
+    transactionId: number,
+  ): Promise<ProcessedData[]> {
+    return await this.processedDataRepository.find({
+      where: { transactionId },
+      relations: ['transactionType'],
+    });
   }
 }

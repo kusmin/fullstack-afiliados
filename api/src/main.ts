@@ -31,6 +31,6 @@ async function bootstrap() {
   const transactionTypeService = app.get(TransactionTypeService);
 
   await transactionTypeService.seedTransactionTypes();
-  await app.listen(5001);
+  await app.listen(parseInt(process.env.API_PORT));
 }
 bootstrap();
